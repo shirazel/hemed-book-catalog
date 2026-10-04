@@ -143,6 +143,10 @@ html body.nw .cp .cdesc p{font-size:var(--fs,19px)!important}body.nw .cp .cdesc 
 body.nw #book{perspective:none!important;width:var(--pw)!important;transform:none!important;clip-path:none!important;transition:none}
 body.nw .leaf{transform:none!important;transition:none!important;transform-style:flat!important}
 body.nw .face{display:none;transform:none!important;backface-visibility:visible!important;-webkit-backface-visibility:visible!important;border-radius:14px}
+body.flip #book{perspective:1800px!important}
+body.nw .face.anim{display:block!important;z-index:5;transform-origin:right center;pointer-events:none;box-shadow:0 0 30px #0004!important}
+body.nw .face.under{display:block!important;z-index:1;pointer-events:none}
+body.nw .face.cur{z-index:2}
 body.nw .leaf{pointer-events:none}body.nw .face.cur{pointer-events:auto}
 body.nw .face.cur,body.meas .face{display:block!important}
 </style></head><body>
@@ -225,7 +229,13 @@ function render(){var nw=narrow();document.body.classList.toggle('picked',!!pick
  if(cur>=N-1&&!nw)best=-1;if(best>=0&&bs[best])bs[best].classList.add('on')}
 function go(n){n=Math.max(0,Math.min(N-1,n));
  if(!narrow()){var tf=Math.floor((n+1)/2);n=tf==0?0:2*tf-1}
- if(n==cur)return;cur=n;render()}
+ if(n==cur)return;
+ var nw=narrow(),oldF=nw?book.querySelector('.face.cur'):null,fwd=n>cur;cur=n;render();
+ if(nw&&oldF&&Math.abs(n-(fwd?n-1:n+1))==1&&oldF.animate){var newF=book.querySelector('.face.cur');if(newF&&newF!==oldF){
+  document.body.classList.add('flip');var mover=fwd?oldF:newF,still=fwd?newF:oldF;
+  mover.classList.add('anim');if(!fwd)still.classList.add('under');
+  var an=mover.animate(fwd?[{rotate:'y 0deg'},{rotate:'y 180deg'}]:[{rotate:'y 180deg'},{rotate:'y 0deg'}],{duration:750,easing:'cubic-bezier(.45,.05,.25,1)'});
+  var done=function(){mover.classList.remove('anim');still.classList.remove('under');document.body.classList.remove('flip')};an.onfinish=done;an.oncancel=done}}}
 function step(d){if(!picked)return;if(narrow())go(cur+d);else go(fl()+d<=0?0:2*(fl()+d)-1)}
 document.getElementById('next').onclick=function(){step(1)};
 document.getElementById('prev').onclick=function(){step(-1)};
