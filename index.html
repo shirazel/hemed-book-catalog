@@ -132,7 +132,6 @@ body.nw .cover.bk h1{font-size:30px}body.nw .cover.bk .logo{width:150px}
  .face{position:relative;inset:auto;width:620px;height:860px;transform:none!important;backface-visibility:visible;box-shadow:none!important;border-radius:0;page-break-after:always;break-after:page}
  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
-@media print{
 .cp .cdesc p{font-size:22px!important;line-height:1.4!important;margin-bottom:8px}.cp .cdesc h4{font-size:26px!important}
 .cp .ct{font-size:36px!important}.cp .tch{font-size:22px!important}.cp .cpic{height:200px}.lk.big{font-size:20px!important}
 body.nw .cp .cdesc p{font-size:19px!important}body.nw .cp .cdesc h4{font-size:22px!important}body.nw .cp .ct{font-size:28px!important}body.nw .cp .tch{font-size:18px!important}body.nw .lk.big{font-size:17px!important}
@@ -140,6 +139,12 @@ body.nw .cp .cdesc p{font-size:19px!important}body.nw .cp .cdesc h4{font-size:22
 
 html body .cp .cdesc p{font-size:var(--fs,22px)!important}.cp .cdesc h4{font-size:calc(var(--fs,22px) + 4px)!important}
 html body.nw .cp .cdesc p{font-size:var(--fs,19px)!important}body.nw .cp .cdesc h4{font-size:calc(var(--fs,19px) + 3px)!important}
+
+body.nw #book{perspective:none!important;width:var(--pw)!important;transform:none!important;clip-path:none!important;transition:none}
+body.nw .leaf{transform:none!important;transition:none!important;transform-style:flat!important}
+body.nw .face{display:none;transform:none!important;backface-visibility:visible!important;-webkit-backface-visibility:visible!important;border-radius:14px}
+body.nw .leaf{pointer-events:none}body.nw .face.cur{pointer-events:auto}
+body.nw .face.cur,body.meas .face{display:block!important}
 </style></head><body>
 <div id="bar"><button class="arr" id="prev" aria-label="הקודם">› הקודם</button><span id="cnt"></span><button class="arr" id="next" aria-label="הבא">הבא ‹</button><span class="brk"></span><span id="slotBtns" style="display:contents"></span></div>
 <button class="sideh" id="shp" aria-label="הקודם">›</button><button class="sideh" id="shn" aria-label="הבא">‹</button><button id="fs" title="מסך מלא" aria-label="מסך מלא">⛶</button><div id="stageWrap"><div id="book"></div></div>
@@ -192,7 +197,8 @@ function build(school){
  var bar=document.getElementById('slotBtns');bar.innerHTML='<button data-go="0">שער</button>'+sBtns.map(function(x){return '<button data-go="'+x[1]+'">⁦'+SLOTS[x[0]]+'⁩</button>'}).join('');
  bar.querySelectorAll('button').forEach(function(b){b.onclick=function(){go(+b.dataset.go)}});
  render();bindSel();updNames();fitCourses()}
-function fitCourses(){var cs=[].slice.call(document.querySelectorAll('.cp')),B=document.getElementById('book'),H=narrow()?130:240,F=narrow()?(innerHeight<700?15:19):22,mn=narrow()?130:240;
+function fitCourses(){document.body.classList.add('meas');try{fitCourses2()}finally{document.body.classList.remove('meas')}}
+function fitCourses2(){var cs=[].slice.call(document.querySelectorAll('.cp')),B=document.getElementById('book'),H=narrow()?130:240,F=narrow()?(innerHeight<700?15:19):22,mn=narrow()?130:240;
  function bad(){return cs.some(function(c){var d=c.querySelector('.cdesc');return d.scrollHeight>d.clientHeight+1})}
  function app(){B.style.setProperty('--fs',F+'px');cs.forEach(function(c){[].forEach.call(c.querySelectorAll('.cdesc p'),function(q){q.style.setProperty('font-size',F+'px','important')});[].forEach.call(c.querySelectorAll('.cdesc h4'),function(q){q.style.setProperty('font-size',(F+4)+'px','important')});var p=c.querySelector('.cpic');p.style.height=H+'px';p.style.display=''})}
  app();var g=0;var Hm=H,Fm=15;while(bad()&&g++<120){if(H>Hm)H-=8;else if(F>Fm)F-=1;else if(H>mn)H-=8;else if(F>14)F-=1;else break;app()}}
@@ -205,9 +211,10 @@ function render(){var nw=narrow();document.body.classList.toggle('picked',!!pick
  var f=fl();leaves.forEach(function(l,i){var t=i<f;l.classList.toggle('turned',t);l.style.zIndex=t?100+i:100-i});
  var sh=0;if(nw)sh=(cur%2==0)?PW/2:-PW/2;else if(f==0)sh=PW/2;else if(cur>=N-1)sh=-PW/2;
  var vw=nw?PW:PW*2,s=nw?1:Math.min((innerWidth-20)/vw,(innerHeight-bh-24)/PH,2);
- book.style.transform='scale('+s+') translateX('+sh+'px)';
+ book.style.transform=nw?'none':'scale('+s+') translateX('+sh+'px)';
+ leaves.forEach(function(l,i){var fs=l.children;if(fs[0])fs[0].classList.toggle('cur',nw&&cur==2*i);if(fs[1])fs[1].classList.toggle('cur',nw&&cur==2*i+1)});
  document.body.classList.toggle('nw2',nw&&PW>=520);
- book.style.clipPath=nw?(cur%2==0?'inset(-40px '+PW+'px -40px -40px)':'inset(-40px -40px -40px '+PW+'px)'):'none';
+ book.style.clipPath='none';
  if(!nw){var one=(f==0||cur>=N-1),vwp=(one?PW:PW*2)*s,L=innerWidth/2-vwp/2,R=innerWidth/2+vwp/2;
   var hp=document.getElementById('shp'),hn=document.getElementById('shn');
   hp.style.left=Math.min(innerWidth-68,R+6)+'px';hn.style.left=Math.max(8,L-66)+'px';
