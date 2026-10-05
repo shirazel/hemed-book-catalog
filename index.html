@@ -160,6 +160,14 @@ body.nw #fs{margin-left:-48px!important}#fs,#snd{z-index:300!important}
 .cp.inner{padding:20px 32px 10px 46px!important}.cp .cdesc{padding-left:0!important}.cp .cbtn{padding:12px 0 22px!important}
 body.nw .cp.inner{padding:14px 16px 8px 24px!important}body.nw .cp .cbtn{padding:8px 0 56px!important}
 body.nw .cp .cdesc p{line-height:1.4!important}
+
+.cp .tch .tm{float:left;background:var(--tint);color:var(--d);border:1.5px solid var(--c);border-radius:99px;padding:2px 14px;font-size:.78em;font-weight:700;direction:ltr;white-space:nowrap}
+body.nw .cp .tch .tm{font-size:.82em;padding:1px 10px}
+
+.cp .tch .tms{float:left;display:flex;gap:6px;flex-wrap:wrap}.cp .tch .tms .tm{float:none}
+.cp .tch .tm.t0{background:var(--tint);border-color:var(--c);color:var(--d)}
+.cp .tch .tm.t1{background:#FFEAD2;border-color:#F59A3C;color:#9A4A00}
+.cp .tch .tm.t2{background:#EBDDF6;border-color:#8E5BB5;color:#53247F}
 </style></head><body>
 <div id="bar"><button class="arr" id="prev" aria-label="הקודם">› הקודם</button><span id="cnt"></span><button class="arr" id="next" aria-label="הבא">הבא ‹</button><span class="brk"></span><span id="slotBtns" style="display:contents"></span></div>
 <button id="snd" title="קול דפדוף" aria-label="קול דפדוף">🔊</button><button class="sideh" id="shp" aria-label="הקודם">›</button><button class="sideh" id="shn" aria-label="הבא">‹</button><button id="fs" title="מסך מלא" aria-label="מסך מלא">⛶</button><div id="stageWrap"><div id="book"></div></div>
@@ -180,23 +188,23 @@ function btns(t){var L=LINKS[t];if(!L)return '';var o='';
  if(L.v)o+='<a class="lk big" data-yt="'+(L.v.indexOf('youtube.com')>0?L.v.split('v=')[1].split('&')[0]:'')+'" href="'+L.v+'" target="_blank" rel="noopener">▶ צפו בסרטון</a>';
  if(L.p)o+='<a class="lk big" href="'+L.p+'" target="_blank" rel="noopener">📊 למצגת הקורס</a>';
  if(L.s)o+='<a class="lk big" href="'+L.s+'" target="_blank" rel="noopener">📄 סילבוס</a>';return o?'<div class="cbtn">'+o+'</div>':''}
-function coursePage(r,k,n,si){
+function coursePage(r,k,n,si,tm){
  var gl=r.g=='g'?'לבנות':'לבנים';
  return '<div class="inner cp"><div class="hd"><div class="hl"><span class="nmv"></span><span class="sep"> · </span><span class="sc">'+(sc?'מבית הספר '+esc(sc[0]):'קמפוס חמ"ד תשפ"ז')+'</span></div><div class="s">קורס '+(k+1)+' מתוך '+n+'</div></div>'
  +'<div class="cpic">'+r.pic+'</div>'
- +'<h3 class="ct">'+esc(r.t)+'</h3><div class="tch">מורה: '+esc(r.tch)+'</div>'
+ +'<h3 class="ct">'+esc(r.t)+'</h3><div class="tch">'+(tm&&tm.length?'<span class="tms">'+tm.map(function(i){return '<span class="tm t'+i+'">🕘 ⁦'+SLOTS[i]+'⁩</span>'}).join('')+'</span>':'')+'מורה: '+esc(r.tch)+'</div>'
  +'<div class="cdesc">'+paras(r.d)+'</div>'+btns(r.t)+'</div>'}
 function build(school){
  sc=school;book.innerHTML='';leaves=[];starts=[];var pages=[];var per=narrow()?2:4;
- var sl=school?school[2].split(',').map(function(x){return SMAP[x.trim()]}).filter(function(x){return x!=null}):[0,1,2];
+ var sl=school?school[2].split(',').map(function(x){return SMAP[x.trim()]}).filter(function(x){return x!=null}):[0,1,2];if(school&&!sl.length)sl=[0,1,2];
  var chips=sl.map(function(i){return '<span>⁦'+SLOTS[i]+'⁩</span>'}).join('');
  pages.push('<div class="cover">'+LOGO+'<h1>קמפוס חמ"ד תשפ"ז</h1><h2>קטלוג הקורסים</h2>'+schoolSelHtml(school)+'<p class="hint">'+(picked?'דפדפו בין העמודים וגלו את הקורסים':'👆 בחרו בית ספר כדי להתחיל')+'</p></div>');
  var sBtns=[],seenT={};
  sl.forEach(function(si){
-  var rs=ROWS.filter(function(r){return r.s==si&&(!school||school[1]=='m'||r.g==school[1])&&!seenT[r.t]&&(seenT[r.t]=1)});
+  var rs=ROWS.filter(function(r){return r.s==si&&(!school||school[1]=='m'||r.g==school[1])&&!seenT[school?r.t+'|'+si:r.t]&&(seenT[school?r.t+'|'+si:r.t]=1)});
   if(!rs.length)return;
   sBtns.push([si,pages.length]);
-  rs.forEach(function(r,k){pages.push(coursePage(r,k,rs.length,si))});
+  rs.forEach(function(r,k){var tm=school?[si]:ROWS.filter(function(x){return x.t==r.t}).map(function(x){return x.s}).filter(function(v,i,a){return a.indexOf(v)==i}).sort();pages.push(coursePage(r,k,rs.length,si,tm))});
  });
  var G=gen();
  var T={f:['רשמי לפניך אילו שני קורסים את רוצה להתנסות ביום שלישי','נתראה ביום שלישי!','תכירי את הקורסים שאת מתעניינת בהם ותחליטי במה לבחור'],
@@ -328,7 +336,7 @@ function applyLive(d){
   if(r.p&&!(NOLINK[r.t]&&NOLINK[r.t].p))L.p=r.p;if(r.v)L.v=r.v;if(r.ls)L.s=r.ls;
   return {s:SMAP[r.s],g:r.g,t:r.t,dom:r.dom,tch:r.tch,pic:pic,d:r.d||''}}).filter(function(r){return r.s!=null});
  if(nr.length<3)return;
- var seenS={};ROWS=nr;SCHOOLS=d.schools.filter(function(x){if(seenS[x[0]])return false;return seenS[x[0]]=1}).sort(function(a,b){return a[0].localeCompare(b[0],'he')});liveMsg('חי מהגיליון ✓ ('+nr.length+' שיבוצים, עודכן '+(d.updated||'')+')',1);
+ var cntS={},seenS={};d.schools.forEach(function(x){cntS[x[0]]=(cntS[x[0]]||0)+1});ROWS=nr;SCHOOLS=d.schools.map(function(x){return cntS[x[0]]>1&&x[1]!='m'?[x[0]+' ('+(x[1]=='g'?'בנות':'בנים')+')',x[1],x[2]]:x}).filter(function(x){var k=x[0]+'|'+x[1];if(seenS[k])return false;return seenS[k]=1}).sort(function(a,b){return a[0].localeCompare(b[0],'he')});liveMsg('חי מהגיליון ✓ ('+nr.length+' שיבוצים, עודכן '+(d.updated||'')+')',1);
  var keep=sc?SCHOOLS.filter(function(x){return x[0]==sc[0]})[0]||null:null;
  build(keep)}
 (function(){var cb='cat'+Date.now(),done=false;window[cb]=function(d){if(done)return;done=true;try{applyLive(d)}catch(e){}};
