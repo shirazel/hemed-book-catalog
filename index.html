@@ -184,9 +184,9 @@ function build(school){
  var sl=school?school[2].split(',').map(function(x){return SMAP[x.trim()]}).filter(function(x){return x!=null}):[0,1,2];
  var chips=sl.map(function(i){return '<span>⁦'+SLOTS[i]+'⁩</span>'}).join('');
  pages.push('<div class="cover">'+LOGO+'<h1>קמפוס חמ"ד תשפ"ז</h1><h2>קטלוג הקורסים</h2>'+schoolSelHtml(school)+'<p class="hint">'+(picked?'דפדפו בין העמודים וגלו את הקורסים':'👆 בחרו בית ספר כדי להתחיל')+'</p></div>');
- var sBtns=[];
+ var sBtns=[],seenT={};
  sl.forEach(function(si){
-  var rs=ROWS.filter(function(r){return r.s==si&&(!school||school[1]=='m'||r.g==school[1])});
+  var rs=ROWS.filter(function(r){return r.s==si&&(!school||school[1]=='m'||r.g==school[1])&&!seenT[r.t]&&(seenT[r.t]=1)});
   if(!rs.length)return;
   sBtns.push([si,pages.length]);
   rs.forEach(function(r,k){pages.push(coursePage(r,k,rs.length,si))});
@@ -286,19 +286,20 @@ addEventListener('resize',function(){render();fitCourses()});build(null);setTime
 var LIVE_URL='https://script.google.com/macros/s/AKfycbxL5hDOZQmPwE2z-l03ZMjqD2aer3aw6xm-hpY3ppbhtKkvLUjoRbbwlfvZQTVVGlCC/exec';
 var EMB={};ROWS.forEach(function(r){EMB[r.t]=r.pic});
 var NOLINK={'מטצ"ים':{p:1}};
-function imgFail(im){var t=im.getAttribute('data-t'),h=EMB[t]||'<div class="ph">✍️</div>',d=document.createElement('div');d.innerHTML=h;var n=d.firstChild;if(n)im.replaceWith(n)}
+function imgFail(im){var d=document.createElement('div');d.innerHTML='<div class="ph">✍️</div>';var n=d.firstChild;if(n)im.replaceWith(n)}
+function liveMsg(t,ok){if(!/[?&]debug/.test(location.search))return;var b=document.getElementById('dbg');if(!b){b=document.createElement('div');b.id='dbg';b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:999;padding:6px 10px;font:700 14px Arial;text-align:center;direction:rtl';document.body.appendChild(b)}b.style.background=ok?'#2e9d57':'#d9534f';b.style.color='#fff';b.textContent=t}
 function applyLive(d){
- if(!d||!d.rows||d.rows.length<3||!d.schools||!d.schools.length)return;
+ if(!d||!d.rows||d.rows.length<3||!d.schools||!d.schools.length){liveMsg('הגיליון לא נטען: '+(d&&d.error?d.error+' — כנראה צריך Deploy מחדש ל-Apps Script':'תשובה ריקה')+' — מוצגת גרסה מוטמעת',0);return}
  if(cur>0&&picked)return;                       // לא מפריעים למי שכבר דפדף/כתב
  var nr=d.rows.map(function(r){
-  var pic=r.img?'<img src="'+esc(r.img)+'" alt="" data-t="'+esc(r.t)+'" onerror="imgFail(this)">':(EMB[r.t]||'<div class="ph">✍️</div>');
+  var pic=r.img?'<img src="'+esc(r.img)+'" alt="" data-t="'+esc(r.t)+'" onerror="imgFail(this)">':'<div class="ph">✍️</div>';
   var L=LINKS[r.t]||(LINKS[r.t]={});
   if(r.p&&!(NOLINK[r.t]&&NOLINK[r.t].p))L.p=r.p;if(r.v)L.v=r.v;if(r.ls)L.s=r.ls;
   return {s:SMAP[r.s],g:r.g,t:r.t,dom:r.dom,tch:r.tch,pic:pic,d:r.d||''}}).filter(function(r){return r.s!=null});
  if(nr.length<3)return;
- ROWS=nr;SCHOOLS=d.schools;
+ ROWS=nr;SCHOOLS=d.schools;liveMsg('חי מהגיליון ✓ ('+nr.length+' שיבוצים, עודכן '+(d.updated||'')+')',1);
  var keep=sc?SCHOOLS.filter(function(x){return x[0]==sc[0]})[0]||null:null;
  build(keep)}
 (function(){var cb='cat'+Date.now(),done=false;window[cb]=function(d){if(done)return;done=true;try{applyLive(d)}catch(e){}};
- var sEl=document.createElement('script');sEl.src=LIVE_URL+'?action=catalogData&callback='+cb;sEl.onerror=function(){};document.head.appendChild(sEl)})();
+ var sEl=document.createElement('script');sEl.src=LIVE_URL+'?action=catalogData&callback='+cb;sEl.onerror=function(){liveMsg('לא הצלחתי להגיע ל-Apps Script — מוצגת גרסה מוטמעת',0)};document.head.appendChild(sEl)})();
 </script></body></html>
