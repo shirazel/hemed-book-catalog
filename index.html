@@ -168,6 +168,7 @@ body.nw .cp .tch .tm{font-size:.82em;padding:1px 10px}
 .cp .tch .tm.t0{background:var(--tint);border-color:var(--c);color:var(--d)}
 .cp .tch .tm.t1{background:#FFEAD2;border-color:#F59A3C;color:#9A4A00}
 .cp .tch .tm.t2{background:#EBDDF6;border-color:#8E5BB5;color:#53247F}
+body.nw .cp .cdesc{overflow-y:auto!important;-webkit-overflow-scrolling:touch}
 </style></head><body>
 <div id="bar"><button class="arr" id="prev" aria-label="הקודם">› הקודם</button><span id="cnt"></span><button class="arr" id="next" aria-label="הבא">הבא ‹</button><span class="brk"></span><span id="slotBtns" style="display:contents"></span></div>
 <button id="snd" title="קול דפדוף" aria-label="קול דפדוף">🔊</button><button class="sideh" id="shp" aria-label="הקודם">›</button><button class="sideh" id="shn" aria-label="הבא">‹</button><button id="fs" title="מסך מלא" aria-label="מסך מלא">⛶</button><div id="stageWrap"><div id="book"></div></div>
@@ -201,10 +202,10 @@ function build(school){
  pages.push('<div class="cover">'+LOGO+'<h1>קמפוס חמ"ד תשפ"ז</h1><h2>קטלוג הקורסים</h2>'+schoolSelHtml(school)+'<p class="hint">'+(picked?'דפדפו בין העמודים וגלו את הקורסים':'👆 בחרו בית ספר כדי להתחיל')+'</p></div>');
  var sBtns=[],seenT={};
  sl.forEach(function(si){
-  var rs=ROWS.filter(function(r){return r.s==si&&(!school||school[1]=='m'||r.g==school[1])&&!seenT[school?r.t+'|'+si:r.t]&&(seenT[school?r.t+'|'+si:r.t]=1)});
+  var rs=ROWS.filter(function(r){return r.s==si&&(!school||school[1]=='m'||r.g==school[1])&&!seenT[r.t+'|'+si]&&(seenT[r.t+'|'+si]=1)});
   if(!rs.length)return;
   sBtns.push([si,pages.length]);
-  rs.forEach(function(r,k){var tm=school?[si]:ROWS.filter(function(x){return x.t==r.t}).map(function(x){return x.s}).filter(function(v,i,a){return a.indexOf(v)==i}).sort();pages.push(coursePage(r,k,rs.length,si,tm))});
+  rs.forEach(function(r,k){var tm=[si];pages.push(coursePage(r,k,rs.length,si,tm))});
  });
  var G=gen();
  var T={f:['רשמי לפניך אילו שני קורסים את רוצה להתנסות ביום שלישי','נתראה ביום שלישי!','תכירי את הקורסים שאת מתעניינת בהם ותחליטי במה לבחור'],
@@ -222,7 +223,7 @@ function build(school){
  render();bindSel();updNames();fitCourses()}
 function fitCourses(){document.body.classList.add('meas');try{fitCourses2()}finally{document.body.classList.remove('meas')}}
 function fitCourses2(){var cs=[].slice.call(document.querySelectorAll('.cp')),N_=narrow(),
- H=N_?150:200,F=N_?(innerHeight<700?16:18):22,bad=[];
+ H=N_?150:200,F=N_?(innerHeight<700?15:17):20,bad=[];
  cs.forEach(function(c){
   [].forEach.call(c.querySelectorAll('.cdesc p'),function(q){q.style.setProperty('font-size',F+'px','important')});
   [].forEach.call(c.querySelectorAll('.cdesc h4'),function(q){q.style.setProperty('font-size',(F+4)+'px','important')});
@@ -235,7 +236,7 @@ function fl(){return Math.floor((cur+1)/2)}
 function render(){var nw=narrow();document.body.classList.toggle('picked',!!picked);document.body.classList.toggle('nw',nw);
  if(lastNarrow!==null&&lastNarrow!==nw){lastNarrow=nw;build(sc);return}lastNarrow=nw;
  var bh=document.getElementById('bar').offsetHeight;
- PW=nw?Math.min(innerWidth-16,640):620;var PH=nw?Math.max(480,Math.min(innerHeight-bh-24,900)):860;
+ PW=nw?Math.min(innerWidth-16,640):620;var PH=nw?Math.max(480,Math.min(innerHeight-bh-24,900)):1000;
  document.documentElement.style.setProperty('--pw',PW+'px');document.documentElement.style.setProperty('--ph',PH+'px');
  var f=fl();leaves.forEach(function(l,i){var t=i<f;l.classList.toggle('turned',t);l.style.zIndex=t?100+i:100-i});
  var sh=0;if(nw)sh=(cur%2==0)?PW/2:-PW/2;else if(f==0)sh=PW/2;else if(cur>=N-1)sh=-PW/2;
