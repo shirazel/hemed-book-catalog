@@ -153,6 +153,13 @@ body.nw .face.cur,body.meas .face{display:block!important}
 @media print{#snd{display:none}}
 body.nw #snd{top:auto;bottom:16px;left:50%;margin-left:28px;width:40px;height:40px;font-size:17px}
 body.nw #fs{margin-left:-48px!important}#fs,#snd{z-index:300!important}
+
+.cb{position:relative}.cbl{display:none;position:absolute;top:100%;left:0;right:0;margin-top:6px;max-height:min(260px,36vh);overflow-y:auto;-webkit-overflow-scrolling:touch;background:#fff;border:2px solid var(--c);border-radius:18px;box-shadow:0 8px 24px #0003;z-index:60;text-align:right;direction:rtl}
+.cbl.on{display:block}.cbi{padding:11px 16px;font-family:inherit;font-size:17px;font-weight:600;color:var(--d);cursor:pointer;border-bottom:1px solid #f0e8f2}.cbi:last-child{border-bottom:0}.cbi:hover,.cbi.hl{background:var(--tint)}.cbl .none{padding:14px;color:#889;text-align:center;font-size:16px}
+
+.cp.inner{padding:20px 32px 10px 46px!important}.cp .cdesc{padding-left:0!important}.cp .cbtn{padding:12px 0 22px!important}
+body.nw .cp.inner{padding:14px 16px 8px 24px!important}body.nw .cp .cbtn{padding:8px 0 56px!important}
+body.nw .cp .cdesc p{line-height:1.4!important}
 </style></head><body>
 <div id="bar"><button class="arr" id="prev" aria-label="הקודם">› הקודם</button><span id="cnt"></span><button class="arr" id="next" aria-label="הבא">הבא ‹</button><span class="brk"></span><span id="slotBtns" style="display:contents"></span></div>
 <button id="snd" title="קול דפדוף" aria-label="קול דפדוף">🔊</button><button class="sideh" id="shp" aria-label="הקודם">›</button><button class="sideh" id="shn" aria-label="הבא">‹</button><button id="fs" title="מסך מלא" aria-label="מסך מלא">⛶</button><div id="stageWrap"><div id="book"></div></div>
@@ -206,10 +213,16 @@ function build(school){
  bar.querySelectorAll('button').forEach(function(b){b.onclick=function(){go(+b.dataset.go)}});
  render();bindSel();updNames();fitCourses()}
 function fitCourses(){document.body.classList.add('meas');try{fitCourses2()}finally{document.body.classList.remove('meas')}}
-function fitCourses2(){var cs=[].slice.call(document.querySelectorAll('.cp')),B=document.getElementById('book'),H=narrow()?130:240,F=narrow()?(innerHeight<700?15:19):22,mn=narrow()?130:240;
- function bad(){return cs.some(function(c){var d=c.querySelector('.cdesc');return d.scrollHeight>d.clientHeight+1})}
- function app(){B.style.setProperty('--fs',F+'px');cs.forEach(function(c){[].forEach.call(c.querySelectorAll('.cdesc p'),function(q){q.style.setProperty('font-size',F+'px','important')});[].forEach.call(c.querySelectorAll('.cdesc h4'),function(q){q.style.setProperty('font-size',(F+4)+'px','important')});var p=c.querySelector('.cpic');p.style.height=H+'px';p.style.display=''})}
- app();var g=0;var Hm=H,Fm=15;while(bad()&&g++<120){if(H>Hm)H-=8;else if(F>Fm)F-=1;else if(H>mn)H-=8;else if(F>14)F-=1;else break;app()}}
+function fitCourses2(){var cs=[].slice.call(document.querySelectorAll('.cp')),N_=narrow(),
+ H=N_?150:200,F=N_?(innerHeight<700?16:18):22,bad=[];
+ cs.forEach(function(c){
+  [].forEach.call(c.querySelectorAll('.cdesc p'),function(q){q.style.setProperty('font-size',F+'px','important')});
+  [].forEach.call(c.querySelectorAll('.cdesc h4'),function(q){q.style.setProperty('font-size',(F+4)+'px','important')});
+  var p=c.querySelector('.cpic');p.style.height=H+'px';p.style.display='';
+  var d=c.querySelector('.cdesc'),ov=d.scrollHeight-d.clientHeight;
+  if(ov>1)bad.push(c.querySelector('.ct').textContent+' (לקצר בערך '+Math.max(10,Math.round(ov/(F*1.4)*(N_?32:55)/10)*10)+' תווים)')});
+ if(/[?&]debug/.test(location.search)){var b=document.getElementById('dbg2');if(!b){b=document.createElement('div');b.id='dbg2';b.style.cssText='position:fixed;top:30px;left:0;right:0;z-index:998;padding:6px 10px;font:700 13px Arial;text-align:center;direction:rtl;color:#fff';document.body.appendChild(b)}
+  b.style.background=bad.length?'#e08a1e':'#2e9d57';b.textContent=bad.length?'טקסט ארוך מדי: '+bad.join(' · '):'כל הטקסטים נכנסים בעמוד'}}
 function fl(){return Math.floor((cur+1)/2)}
 function render(){var nw=narrow();document.body.classList.toggle('picked',!!picked);document.body.classList.toggle('nw',nw);
  if(lastNarrow!==null&&lastNarrow!==nw){lastNarrow=nw;build(sc);return}lastNarrow=nw;
@@ -270,15 +283,33 @@ function ign(e){return e.target.closest&&e.target.closest('.lk,.sel,.ln,.hnd')}
 var sx=null;book.addEventListener('touchstart',function(e){if(ign(e)){sx=null;return}sx=e.touches[0].clientX},{passive:true});
 book.addEventListener('touchend',function(e){if(sx==null)return;var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40)step(dx<0?1:-1);sx=null});
 book.addEventListener('click',function(e){if(ign(e))return;var r=book.getBoundingClientRect();step((e.clientX-r.left)<r.width/2?1:-1)});
-function schoolSelHtml(school){var cur=school?SCHOOLS.indexOf(school):(sc===null&&picked?'all':'');
- return '<div class="sel"><label>בחרו את בית הספר שלכם</label><select id="schoolSel"><option value="">— לחצו לבחירה —</option>'+SCHOOLS.map(function(x,i){return '<option value="'+i+'"'+(school&&school===x?' selected':'')+'>'+esc(x[0])+'</option>'}).join('')+'<option value="all"'+(!school&&picked?' selected':'')+'>כל הקורסים (ללא סינון)</option></select></div><div class="sel nmf"><label>השם שלכם</label><input id="stuName" maxlength="40" placeholder="כתבו כאן את שמכם" value="'+esc(stuName).replace(/"/g,'&quot;')+'"></div>'}
+function schoolSelHtml(school){var cn=school?school[0]:(sc===null&&picked?'כל הקורסים (ללא סינון)':'');
+ return '<div class="sel"><label>בחרו את בית הספר שלכם</label><div class="cb"><input id="schoolSel" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="לחצו וכתבו שם בית ספר" value="'+esc(cn).replace(/"/g,'&quot;')+'"><div id="schoolList" class="cbl"></div></div></div><div class="sel nmf"><label>השם שלכם</label><input id="stuName" maxlength="40" placeholder="כתבו כאן את שמכם" value="'+esc(stuName).replace(/"/g,'&quot;')+'"></div>'}
 var stuName='';
 function gen(){return sc?(sc[1]=='g'?'f':sc[1]=='b'?'m':'p'):'p'}
 function updNames(){document.querySelectorAll('.nmv').forEach(function(e){e.textContent=stuName.trim()});document.querySelectorAll('.nmc').forEach(function(e){e.textContent=stuName.trim()?stuName.trim()+', ':''})}
 var picked=false;
-function bindSel(){var el=document.getElementById('schoolSel');if(!el)return;
- ['click','touchstart','touchend','keydown'].forEach(function(ev){el.parentNode.addEventListener(ev,function(e){e.stopPropagation()},{passive:true})});
- el.onchange=function(){var v=el.value;if(v==='')return;picked=true;build(v==='all'?null:SCHOOLS[+v])};
+function normS(t){return String(t).replace(/["'׳״\-–()\.,]/g,'').replace(/\s+/g,' ').trim()}
+function bindSel(){var inp=document.getElementById('schoolSel');if(!inp)return;
+ var list=document.getElementById('schoolList'),box=inp.closest('.sel'),hl=-1,cur_=[];
+ ['click','touchstart','touchend','keydown','mousedown'].forEach(function(ev){box.addEventListener(ev,function(e){e.stopPropagation()},{passive:true})});
+ var sorted=SCHOOLS.slice().sort(function(a,b){return a[0].localeCompare(b[0],'he')});
+ function show(q){var nq=normS(q).split(' ').filter(Boolean);
+  cur_=sorted.filter(function(x){var n=normS(x[0]);return nq.every(function(w){return n.indexOf(w)>=0})}).map(function(x){return {n:x[0],s:x}});
+  if(!nq.length||'כל הקורסים'.indexOf(normS(q))>=0||nq.every(function(w){return 'כל הקורסים ללא סינון'.indexOf(w)>=0}))cur_.push({n:'כל הקורסים (ללא סינון)',s:null});
+  hl=cur_.length&&nq.length?0:-1;
+  list.innerHTML=cur_.length?cur_.map(function(c,k){return '<div class="cbi'+(k==hl?' hl':'')+'" data-k="'+k+'">'+esc(c.n)+'</div>'}).join(''):'<div class="none">לא נמצא בית ספר בשם הזה</div>';
+  list.classList.add('on')}
+ function hide(){list.classList.remove('on')}
+ function pick(k){var c=cur_[k];if(!c)return;picked=true;build(c.s)}
+ function mark(){[].forEach.call(list.querySelectorAll('.cbi'),function(e,k){e.classList.toggle('hl',k==hl);if(k==hl&&e.scrollIntoView)e.scrollIntoView({block:'nearest'})})}
+ inp.addEventListener('focus',function(){inp.select();show('')});
+ inp.addEventListener('click',function(){if(!list.classList.contains('on'))show('')});
+ inp.addEventListener('input',function(){show(inp.value)});
+ inp.addEventListener('keydown',function(e){if(e.key=='ArrowDown'){e.preventDefault();hl=Math.min(cur_.length-1,hl+1);mark()}else if(e.key=='ArrowUp'){e.preventDefault();hl=Math.max(0,hl-1);mark()}else if(e.key=='Enter'){e.preventDefault();pick(hl>=0?hl:0)}else if(e.key=='Escape'){hide();inp.blur()}});
+ list.addEventListener('mousedown',function(e){e.preventDefault()});
+ list.addEventListener('click',function(e){var it=e.target.closest('.cbi');if(it)pick(+it.dataset.k)});
+ inp.addEventListener('blur',function(){setTimeout(hide,150)});
  var nf=document.getElementById('stuName');if(nf)nf.oninput=function(){stuName=nf.value;updNames()}}
 addEventListener('resize',function(){render();fitCourses()});build(null);setTimeout(function(){render();fitCourses()},250);addEventListener('load',render);
 
@@ -297,7 +328,7 @@ function applyLive(d){
   if(r.p&&!(NOLINK[r.t]&&NOLINK[r.t].p))L.p=r.p;if(r.v)L.v=r.v;if(r.ls)L.s=r.ls;
   return {s:SMAP[r.s],g:r.g,t:r.t,dom:r.dom,tch:r.tch,pic:pic,d:r.d||''}}).filter(function(r){return r.s!=null});
  if(nr.length<3)return;
- ROWS=nr;SCHOOLS=d.schools;liveMsg('חי מהגיליון ✓ ('+nr.length+' שיבוצים, עודכן '+(d.updated||'')+')',1);
+ var seenS={};ROWS=nr;SCHOOLS=d.schools.filter(function(x){if(seenS[x[0]])return false;return seenS[x[0]]=1}).sort(function(a,b){return a[0].localeCompare(b[0],'he')});liveMsg('חי מהגיליון ✓ ('+nr.length+' שיבוצים, עודכן '+(d.updated||'')+')',1);
  var keep=sc?SCHOOLS.filter(function(x){return x[0]==sc[0]})[0]||null:null;
  build(keep)}
 (function(){var cb='cat'+Date.now(),done=false;window[cb]=function(d){if(done)return;done=true;try{applyLive(d)}catch(e){}};
